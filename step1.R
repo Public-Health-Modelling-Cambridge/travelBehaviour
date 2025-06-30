@@ -1,3 +1,5 @@
+rm(list=ls())
+
 library(dplyr)
 library(readr)
 library(tidyr)
@@ -125,7 +127,17 @@ hurdleModelNHB<-readRDS(file = "models/hurdleModelNHB.rds")
 # HBmandatory
 preparedData$predictedHBmandatory <- predict_trips(preparedData, zeroModelHBmandatory, countModelHBmandatory, 0.5, TRUE)
 
-# HBdiscretionary
+# For original data (training)
+# For original data (training)
+preparedData <- preparedData %>%
+  mutate(
+    # Create grouped dummy variables
+    p.HBmandatory_123 = as.integer(predictedHBmandatory %in% 1:3),
+    p.HBmandatory_45 = as.integer(predictedHBmandatory %in% 4:5),
+    
+    # Handle NA values (set to 0 to match reference group)
+    across(c(p.HBmandatory_123, p.HBmandatory_45), ~replace_na(., 0)))
+    
 preparedData$predictedHBdiscretionary <- predict_hurdle(hurdleModelHBdiscretionary, preparedData)
 
 # NHB
